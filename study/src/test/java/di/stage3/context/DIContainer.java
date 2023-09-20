@@ -1,8 +1,10 @@
 package di.stage3.context;
 
+import di.stage4.annotations.Inject;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -43,19 +45,17 @@ class DIContainer {
 
     private void setFields(final Object bean) throws IllegalAccessException {
         Field[] fields = bean.getClass().getDeclaredFields();
-        for (Field field : fields) {
-            field.setAccessible(true);
-            if (field.get(bean) != null) {
-                continue;
-            }
-            Object injectedBean = getBean(field.getType());
-            try {
-                field.setAccessible(true);
-                field.set(bean, injectedBean);
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
-        }
+        Arrays.stream(fields)
+                .filter(field -> field.isAnnotationPresent(Inject.class))
+                .forEach(field -> {
+                    field.setAccessible(true);
+                    Object injectedBean = getBean(field.getType());
+                    try {
+                        field.set(bean, injectedBean);
+                    } catch (IllegalAccessException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
     }
 
     @SuppressWarnings("unchecked")

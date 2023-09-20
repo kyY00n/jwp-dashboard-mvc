@@ -1,10 +1,16 @@
 package di.stage4.annotations;
 
 import java.util.Set;
+import java.util.stream.Collectors;
+import org.reflections.Reflections;
+import org.reflections.scanners.SubTypesScanner;
 
 public class ClassPathScanner {
 
     public static Set<Class<?>> getAllClassesInPackage(final String packageName) {
-        return null;
+        Reflections reflections = new Reflections(packageName, new SubTypesScanner(false));
+        return reflections.getSubTypesOf(Object.class)
+                .stream()
+                .collect(Collectors.toSet());
     }
 }
